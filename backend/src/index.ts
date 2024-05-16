@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { Prisma } from '@prisma/client'
 import { withAccelerate } from '@prisma/extension-accelerate'
-import { PrismaClient } from '@prisma/client/extension'
+import { PrismaClient } from '@prisma/client/edge'
+import { decode,jwt,sign,verify } from 'hono/jwt'
 
 
 const app = new Hono<{
@@ -12,11 +12,19 @@ const app = new Hono<{
 
 
 
-app.post('/api/v1/signup', (c) => {
+app.post('/api/v1/signup', async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
-  return c.text('signup')
+  const body = await c.req.json();
+  const user = await prisma.user.create({
+    data: {
+      email: body.email,
+      password: body.password,
+    }
+  })
+  const token = sign({ id: user.id}, 'secret')
+  return c.json({ jwt: token});
 })
 
 app.post('/api/v1/signin', (c) => {
