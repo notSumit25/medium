@@ -6,7 +6,7 @@ import { BACKEND_URL } from "../config";
 export interface Blog {
     "content": string;
     "title": string;
-    "id": number
+    "id": string;
     "author": {
         "name": string
     }
@@ -19,11 +19,12 @@ export const useBlog = ({ id }: { id: string }) => {
     useEffect(() => {
         axios.get(`${BACKEND_URL}/api/v1/blog/${id}`, {
             headers: {
-                Authorization: localStorage.getItem("token")
+                authorization: localStorage.getItem("token")
             }
         })
             .then(response => {
-                setBlog(response.data.blog);
+                console.log(response.data.res);
+                setBlog(response.data.res);
                 setLoading(false);
             })
     }, [id])
@@ -45,7 +46,9 @@ export const useBlogs = () => {
             }
         })
             .then(response => {
-                setBlogs(response.data.blogs);
+                console.log(response.data.res);
+                setBlogs(response.data.res);
+                console.log(blogs);
                 setLoading(false);
             })
     }, [])
