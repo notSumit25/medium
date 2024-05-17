@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { decode, jwt, sign, verify } from "hono/jwt";
+import { postSchema, updateSchema } from "@notsumit/medium-common";
 
 // This is the same as the previous snippet
 export const blogRouter = new Hono<{
@@ -42,6 +43,11 @@ blogRouter.post("/", async (c) => {
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
   const body = await c.req.json();
+    const { success } = postSchema.safeParse(body);
+    if (!success) {
+      c.status(400);
+      return c.json({ message: "Invalid input" });
+    }
   const userId = c.get('userId');
   const res = await prisma.post.create({
     data: {
@@ -59,6 +65,11 @@ blogRouter.put("/", async (c) => {
         datasourceUrl: c.env.DATABASE_URL,
       }).$extends(withAccelerate());
       const body = await c.req.json();
+        const { success } = updateSchema.safeParse(body);
+        if (!success) {
+          c.status(400);
+          return c.json({ message: "Invalid input" });
+        }
       const res = await prisma.post.update({
         where: {
             id: body.id,
